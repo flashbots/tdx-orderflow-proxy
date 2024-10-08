@@ -13,10 +13,14 @@ import (
 	"time"
 )
 
-// hosts is a list of ip / dns names for the certificate
+// GenerateCert generated a TLS certificate and key.
+// - `hosts`: a list of ip / dns names to include in the certificate
 func GenerateCert(validFor time.Duration, hosts []string) (cert, key []byte, err error) {
 	// copied from https://go.dev/src/crypto/tls/generate_cert.go
 	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		return nil, nil, err
+	}
 	keyUsage := x509.KeyUsageDigitalSignature
 
 	notBefore := time.Now()
@@ -75,5 +79,5 @@ func GenerateCert(validFor time.Duration, hosts []string) (cert, key []byte, err
 		return nil, nil, err
 	}
 	key = keyOut.Bytes()
-	return
+	return cert, key, nil
 }

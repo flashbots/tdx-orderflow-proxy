@@ -48,8 +48,8 @@ func New(config Config) (*Proxy, error) {
 
 func (prx *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/cert" {
-		w.Header().Add("content-type", "application/octet-stream")
-		w.Write(prx.publicCertPEM)
+		w.Header().Add("Content-Type", "application/octet-stream")
+		w.Write(prx.publicCertPEM) //nolint: errcheck
 		return
 	}
 
@@ -63,7 +63,7 @@ func (prx *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Timeout: 1 * time.Second,
 	}
 
-	req, err := http.NewRequest("POST", prx.Config.BuilderEndpoint, bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, prx.Config.BuilderEndpoint, bytes.NewBuffer(body))
 	if err != nil {
 		prx.log.Error("Failed to create a req to the local builder", "err", err)
 		return
@@ -122,7 +122,9 @@ func (prx *Proxy) StartServersInBackground() error {
 		Handler: prx,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{*prx.certificate},
+			MinVersion:   tls.VersionTLS13,
 		},
+		ReadHeaderTimeout: 2 * time.Second,
 	}
 	go func() {
 		prx.log.Info("Starting orderflow users input", "addr", srvUsers.Addr)
@@ -137,7 +139,9 @@ func (prx *Proxy) StartServersInBackground() error {
 		Handler: prx,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{*prx.certificate},
+			MinVersion:   tls.VersionTLS13,
 		},
+		ReadHeaderTimeout: 2 * time.Second,
 	}
 	go func() {
 		prx.log.Info("Starting orderflow network input", "addr", srvNetwork.Addr)
@@ -148,8 +152,9 @@ func (prx *Proxy) StartServersInBackground() error {
 
 	// cert server
 	srvCert := &http.Server{
-		Addr:    prx.Config.CertListenAddr,
-		Handler: prx,
+		Addr:              prx.Config.CertListenAddr,
+		Handler:           prx,
+		ReadHeaderTimeout: 2 * time.Second,
 	}
 	go func() {
 		prx.log.Info("Starting cert server", "addr", srvCert.Addr)

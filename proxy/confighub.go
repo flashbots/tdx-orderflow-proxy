@@ -1,3 +1,4 @@
+// Package proxy provides the main proxy server.
 package proxy
 
 import "github.com/ethereum/go-ethereum/common"
