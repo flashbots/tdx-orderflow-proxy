@@ -1,7 +1,7 @@
 # orderflow-proxy
 
-[![Goreport status](https://goreportcard.com/badge/github.com/flashbots/orderflow-proxy)](https://goreportcard.com/report/github.com/flashbots/go-template)
-[![Test status](https://github.com/flashbots/orderflow-proxy/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/flashbots/go-template/actions?query=workflow%3A%22Checks%22)
+[![Goreport status](https://goreportcard.com/badge/github.com/flashbots/tdx-orderflow-proxy)](https://goreportcard.com/report/github.com/flashbots/go-template)
+[![Test status](https://github.com/flashbots/tdx-orderflow-proxy/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/flashbots/go-template/actions?query=workflow%3A%22Checks%22)
 
 ## Getting started
 

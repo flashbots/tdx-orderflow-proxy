@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/VictoriaMetrics/metrics"
-	"github.com/flashbots/orderflow-proxy/common"
-	"github.com/flashbots/orderflow-proxy/proxy"
+	"github.com/flashbots/tdx-orderflow-proxy/common"
+	"github.com/flashbots/tdx-orderflow-proxy/proxy"
 	"github.com/google/uuid"
 	"github.com/urfave/cli/v2" // imports as package "cli"
 )

@@ -23,7 +23,7 @@ clean: ## Clean the build directory
 .PHONY: build
 build: ## Build the HTTP server
 	@mkdir -p ./build
-	go build -trimpath -ldflags "-X github.com/flashbots/orderflow-proxy/common.Version=${VERSION}" -v -o ./build/orderflow-proxy cmd/httpserver/main.go
+	go build -trimpath -ldflags "-X github.com/flashbots/tdx-orderflow-proxy/common.Version=${VERSION}" -v -o ./build/orderflow-proxy cmd/httpserver/main.go
 
 ##@ Test & Development
 

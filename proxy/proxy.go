@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/flashbots/orderflow-proxy/metrics"
+	"github.com/flashbots/tdx-orderflow-proxy/metrics"
 )
 
 type Config struct {
