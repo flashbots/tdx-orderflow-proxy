@@ -1,4 +1,4 @@
-module github.com/flashbots/orderflow-proxy
+module github.com/flashbots/tdx-orderflow-proxy
 
 go 1.22
 
