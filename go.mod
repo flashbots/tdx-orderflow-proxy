@@ -8,6 +8,7 @@ require (
 	github.com/flashbots/go-utils v0.8.0
 	github.com/google/uuid v1.6.0
 	github.com/urfave/cli/v2 v2.27.2
+	golang.org/x/crypto v0.22.0
 )
 
 require (
@@ -37,7 +38,6 @@ require (
 	github.com/valyala/fastrand v1.1.0 // indirect
 	github.com/valyala/histogram v1.2.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect

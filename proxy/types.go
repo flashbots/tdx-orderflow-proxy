@@ -5,13 +5,16 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"hash"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/sha3"
 )
 
 // Note on optional Signer field:
@@ -20,6 +23,16 @@ import (
 //   in this case it can be empty! @should we prohibit that?
 
 // eth_SendBundle
+
+const (
+	BundleTxLimit = 100
+)
+
+var (
+	ErrBundleNoTxs          = errors.New("bundle with no txs")
+	ErrBundleTooManyTxs     = errors.New("too many txs in bundle")
+	ErrMevBundleUnmatchedTx = errors.New("mev bundle with unmatched tx")
+)
 
 type EthSendBundleArgs struct {
 	Txs               []hexutil.Bytes `json:"txs"`         // empty txs for cancellations are not supported
@@ -112,7 +125,7 @@ type EthCancelBundleArgs struct {
 type BidSubsisideBlockArgs uint64
 
 /// unique key
-/// unique key is used to deduplicate requests, its will give different resuts then bundle uuid
+/// unique key is used to deduplicate requests, its will give different results then bundle uuid
 
 func newHash() hash.Hash {
 	return sha256.New()
@@ -144,6 +157,24 @@ func (b *EthSendBundleArgs) UniqueKey() uuid.UUID {
 	return uuidFromHash(hash)
 }
 
+func (b *EthSendBundleArgs) Validate() (common.Hash, uuid.UUID, error) {
+	if len(b.Txs) == 0 {
+		return common.Hash{}, uuid.Nil, ErrBundleNoTxs
+	}
+	if len(b.Txs) > BundleTxLimit {
+		return common.Hash{}, uuid.Nil, ErrBundleTooManyTxs
+	}
+	hash := sha3.NewLegacyKeccak256()
+	for _, rawTx := range b.Txs {
+		var tx types.Transaction
+		if err := tx.UnmarshalBinary(rawTx); err != nil {
+			return common.Hash{}, uuid.Nil, err
+		}
+		hash.Write(tx.Hash().Bytes())
+	}
+	return common.BytesToHash(hash.Sum(nil)), b.UniqueKey(), nil
+}
+
 func (b *MevSendBundleArgs) UniqueKey() uuid.UUID {
 	hash := newHash()
 	uniqueKeyMevSendBundle(b, hash)
@@ -169,6 +200,34 @@ func uniqueKeyMevSendBundle(b *MevSendBundleArgs, hash hash.Hash) {
 		hash.Write([]byte(body.RevertMode))
 	}
 	_, _ = hash.Write(b.Metadata.Signer.Bytes())
+}
+
+func (b *MevSendBundleArgs) Validate() (common.Hash, error) {
+	if len(b.Body) == 0 {
+		return common.Hash{}, ErrBundleNoTxs
+	}
+	hash := sha3.NewLegacyKeccak256()
+	if err := hashMevSendBundle(b, hash); err != nil {
+		return common.Hash{}, err
+	}
+	return common.BytesToHash(hash.Sum(nil)), nil
+}
+
+func hashMevSendBundle(b *MevSendBundleArgs, hash hash.Hash) error {
+	for _, body := range b.Body {
+		if body.Hash != nil {
+			return ErrMevBundleUnmatchedTx
+		} else if body.Bundle != nil {
+			return hashMevSendBundle(body.Bundle, hash)
+		} else if body.Tx != nil {
+			tx := new(types.Transaction)
+			if err := tx.UnmarshalBinary(*body.Tx); err != nil {
+				return err
+			}
+			hash.Write(tx.Hash().Bytes())
+		}
+	}
+	return nil
 }
 
 func (b *EthSendRawTransactionArgs) UniqueKey() uuid.UUID {
