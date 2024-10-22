@@ -25,13 +25,16 @@ import (
 // eth_SendBundle
 
 const (
-	BundleTxLimit = 100
+	BundleTxLimit     = 100
+	MevBundleTxLimit  = 50
+	MevBundleMaxDepth = 1
 )
 
 var (
 	ErrBundleNoTxs          = errors.New("bundle with no txs")
 	ErrBundleTooManyTxs     = errors.New("too many txs in bundle")
 	ErrMevBundleUnmatchedTx = errors.New("mev bundle with unmatched tx")
+	ErrMevBundleTooDeep     = errors.New("mev bundle too deep")
 )
 
 type EthSendBundleArgs struct {
@@ -164,15 +167,30 @@ func (b *EthSendBundleArgs) Validate() (common.Hash, uuid.UUID, error) {
 	if len(b.Txs) > BundleTxLimit {
 		return common.Hash{}, uuid.Nil, ErrBundleTooManyTxs
 	}
-	hash := sha3.NewLegacyKeccak256()
+	// first compute keccak hash over the txs
+	hasher := sha3.NewLegacyKeccak256()
 	for _, rawTx := range b.Txs {
 		var tx types.Transaction
 		if err := tx.UnmarshalBinary(rawTx); err != nil {
 			return common.Hash{}, uuid.Nil, err
 		}
-		hash.Write(tx.Hash().Bytes())
+		hasher.Write(tx.Hash().Bytes())
 	}
-	return common.BytesToHash(hash.Sum(nil)), b.UniqueKey(), nil
+	hashBytes := hasher.Sum(nil)
+
+	// then compute the uuid
+	var buf []byte
+	buf = binary.AppendVarint(buf, b.BlockNumber.Int64())
+	buf = append(buf, hashBytes...)
+	sort.Slice(b.RevertingTxHashes, func(i, j int) bool {
+		return bytes.Compare(b.RevertingTxHashes[i][:], b.RevertingTxHashes[j][:]) <= 0
+	})
+	for _, txHash := range b.RevertingTxHashes {
+		buf = append(buf, txHash[:]...)
+	}
+	return common.BytesToHash(hashBytes),
+		uuid.NewHash(sha256.New(), uuid.Nil, buf, 5),
+		nil
 }
 
 func (b *MevSendBundleArgs) UniqueKey() uuid.UUID {
@@ -206,28 +224,32 @@ func (b *MevSendBundleArgs) Validate() (common.Hash, error) {
 	if len(b.Body) == 0 {
 		return common.Hash{}, ErrBundleNoTxs
 	}
-	hash := sha3.NewLegacyKeccak256()
-	if err := hashMevSendBundle(b, hash); err != nil {
-		return common.Hash{}, err
-	}
-	return common.BytesToHash(hash.Sum(nil)), nil
+	return hashMevSendBundle(0, b)
 }
 
-func hashMevSendBundle(b *MevSendBundleArgs, hash hash.Hash) error {
+func hashMevSendBundle(level int, b *MevSendBundleArgs) (common.Hash, error) {
+	if level > MevBundleMaxDepth {
+		return common.Hash{}, ErrMevBundleTooDeep
+	}
+	hasher := sha3.NewLegacyKeccak256()
 	for _, body := range b.Body {
 		if body.Hash != nil {
-			return ErrMevBundleUnmatchedTx
+			return common.Hash{}, ErrMevBundleUnmatchedTx
 		} else if body.Bundle != nil {
-			return hashMevSendBundle(body.Bundle, hash)
+			innerHash, err := hashMevSendBundle(level+1, body.Bundle)
+			if err != nil {
+				return common.Hash{}, err
+			}
+			hasher.Write(innerHash.Bytes())
 		} else if body.Tx != nil {
 			tx := new(types.Transaction)
 			if err := tx.UnmarshalBinary(*body.Tx); err != nil {
-				return err
+				return common.Hash{}, err
 			}
-			hash.Write(tx.Hash().Bytes())
+			hasher.Write(tx.Hash().Bytes())
 		}
 	}
-	return nil
+	return common.BytesToHash(hasher.Sum(nil)), nil
 }
 
 func (b *EthSendRawTransactionArgs) UniqueKey() uuid.UUID {
