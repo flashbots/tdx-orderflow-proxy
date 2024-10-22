@@ -57,6 +57,8 @@ func TestEthSendBundleArgs_Validate(t *testing.T) {
 }
 
 func TestMevSendBundleArgs_Validate(t *testing.T) {
+	// From: https://github.com/flashbots/rbuilder/blob/91f7a2c22eaeaf6c44e28c0bda98a2a0d566a6cb/crates/rbuilder/src/primitives/serialize.rs#L700
+	// NOTE: I had to dump the hash in a debugger to get the expected hash since the test above uses a computed hash
 	raw := []byte(`{
 		"version": "v0.1",
 		"inclusion": {
