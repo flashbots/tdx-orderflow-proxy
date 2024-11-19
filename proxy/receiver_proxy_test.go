@@ -384,7 +384,7 @@ func createTestTx(i int) *hexutil.Bytes {
 	chainID := big.NewInt(1)
 	txData := &types.DynamicFeeTx{
 		ChainID:    chainID,
-		Nonce:      uint64(i),
+		Nonce:      uint64(i), //nolint:gosec
 		GasTipCap:  big.NewInt(1),
 		GasFeeCap:  big.NewInt(1),
 		Gas:        21000,
