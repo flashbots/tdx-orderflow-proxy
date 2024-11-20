@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/flashbots/go-utils/rpcclient"
 	"github.com/flashbots/go-utils/signature"
+	utils_tls "github.com/flashbots/go-utils/tls"
 	"github.com/google/uuid"
 	"github.com/hashicorp/golang-lru/v2/expirable"
 	"golang.org/x/time/rate"
@@ -97,7 +98,8 @@ func NewReceiverProxy(config ReceiverProxyConfig) (*ReceiverProxy, error) {
 	if err != nil {
 		return nil, err
 	}
-	cert, key, err := GenerateCert(config.CertValidDuration, config.CertHosts)
+
+	cert, key, err := utils_tls.GenerateTLS(config.CertValidDuration, config.CertHosts)
 	if err != nil {
 		return nil, err
 	}

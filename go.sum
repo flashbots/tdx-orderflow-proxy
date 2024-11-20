@@ -56,8 +56,8 @@ github.com/ethereum/go-ethereum v1.14.10 h1:kC24WjYeRjDy86LVo6MfF5Xs7nnUu+XG4Aja
 github.com/ethereum/go-ethereum v1.14.10/go.mod h1:+l/fr42Mma+xBnhefL/+z11/hcmJ2egl+ScIVPjhc7E=
 github.com/ethereum/go-verkle v0.1.1-0.20240829091221-dffa7562dbe9 h1:8NfxH2iXvJ60YRB8ChToFTUzl8awsc3cJ8CbLjGIl/A=
 github.com/ethereum/go-verkle v0.1.1-0.20240829091221-dffa7562dbe9/go.mod h1:M3b90YRnzqKyyzBEWJGqj8Qff4IDeXnzFw0P9bFw3uk=
-github.com/flashbots/go-utils v0.8.1-0.20241111163610-99c6bcefd7df h1:hUEq6QNP8kUMQcOJc/iur3XFMUptqgAn+Qz1XYccj1k=
-github.com/flashbots/go-utils v0.8.1-0.20241111163610-99c6bcefd7df/go.mod h1:Lo/nrlC+q8ANgT3e6MKALIJCU+V9qTSgNtoLk/q1uIw=
+github.com/flashbots/go-utils v0.8.2 h1:8JUKd9Cv1CTcp63V03ya+47nflTwBEqZq357iwW4fxQ=
+github.com/flashbots/go-utils v0.8.2/go.mod h1:Lo/nrlC+q8ANgT3e6MKALIJCU+V9qTSgNtoLk/q1uIw=
 github.com/getsentry/sentry-go v0.27.0 h1:Pv98CIbtB3LkMWmXi4Joa5OOcwbmnX88sF5qbK3r3Ps=
 github.com/getsentry/sentry-go v0.27.0/go.mod h1:lc76E2QywIyW8WuBnwl8Lc4bkmQH4+w1gwTf25trprY=
 github.com/go-ole/go-ole v1.2.5/go.mod h1:pprOEPIfldk/42T2oK7lQ4v4JSDwmV0As9GaiUsvbm0=
