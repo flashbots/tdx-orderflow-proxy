@@ -7,14 +7,30 @@ on:
 
 jobs:
 
-  dummy:
-    name: Dummy
+  # dummy:
+  #   name: Dummy
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Dummy
+  #       run: exit 0
+
+
+  build-binary:
+    name: Build binary
     runs-on: ubuntu-latest
 
     steps:
-      - name: Dummy
-        run: exit 0
+      - name: Checkout sources
+        uses: actions/checkout@v2
 
+      - name: Build binaries
+        run: make build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4.5.0
+        with:
+          path: build/
 
 #   docker-image:
 #     name: Publish Docker Image
