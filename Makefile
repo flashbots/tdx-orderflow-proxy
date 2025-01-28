@@ -27,6 +27,15 @@ build: ## Build the HTTP server
 	go build -trimpath -ldflags "-X github.com/flashbots/tdx-orderflow-proxy/common.Version=${VERSION}" -v -o ./build/receiver-proxy cmd/receiver-proxy/main.go
 	go build -trimpath -ldflags "-X github.com/flashbots/tdx-orderflow-proxy/common.Version=${VERSION}" -v -o ./build/test-orderflow-sender cmd/test-tx-sender/main.go
 
+.PHONY: build-receiver-proxy
+build-receiver-proxy: ## Build only the receiver-proxy
+	@mkdir -p ./build
+	CGO_ENABLED=0 GOOS=linux go build \
+		-trimpath \
+		-ldflags "-s -w -buildid= -X github.com/flashbots/tdx-orderflow-proxy/common.Version=${VERSION}" \
+		-v -o ./build/receiver-proxy \
+		cmd/receiver-proxy/main.go
+
 ##@ Test & Development
 
 .PHONY: test

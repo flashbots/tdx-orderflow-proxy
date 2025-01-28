@@ -6,24 +6,22 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  KANIKO_VERSION: gcr.io/kaniko-project/executor@sha256:9e69fd4330ec887829c780f5126dd80edc663df6def362cd22e79bcdf00ac53f
+
 jobs:
-
-  # dummy:
-  #   name: Dummy
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Dummy
-  #       run: exit 0
-
-
   build-binary:
     name: Build binary
     runs-on: ubuntu-latest
-
+    container:
+      image: golang:1.24rc2-bullseye@sha256:236da40764c1bcf469fcaf6ca225ca881c3f06cbd1934e392d6e4af3484f6cac
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build binaries
         run: make build
@@ -33,82 +31,68 @@ jobs:
         with:
           path: build/
 
-#   docker-image:
-#     name: Publish Docker Image
-#     runs-on: ubuntu-latest
+  build-receiver-image:
+    name: Build Receiver Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
-#     steps:
-#       - name: Checkout sources
-#         uses: actions/checkout@v2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-#       - name: Get tag version
-#         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-receiver
+          tags: |
+            type=sha
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
 
-#       - name: Print version
-#         run: |
-#           echo $RELEASE_VERSION
-#           echo ${{ env.RELEASE_VERSION }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-#       - name: Set up QEMU
-#         uses: docker/setup-qemu-action@v3
+      - name: Build and Push with Kaniko
+        run: |
+          mkdir -p /home/runner/.docker
 
-#       - name: Set up Docker Buildx
-#         uses: docker/setup-buildx-action@v3
+          echo '{"auths":{"${{ env.REGISTRY }}":{"auth":"'$(echo -n "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" | base64)'"}}}'> /home/runner/.docker/config.json
+          
+          docker run \
+            -v ${{ github.workspace }}:/workspace \
+            -v /home/runner/.docker/config.json:/kaniko/.docker/config.json \
+            ${{ env.KANIKO_VERSION }} \
+            --context /workspace \
+            --dockerfile /workspace/receiver.dockerfile \
+            --reproducible \
+            --cache=true \
+            --cache-repo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-cache \
+            --destination ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-receiver:${{ steps.meta.outputs.version }} \
+            ${{ steps.meta.outputs.tags }}
 
-#       - name: Extract metadata (tags, labels) for Docker
-#          id: meta
-#          uses: docker/metadata-action@v5
-#          with:
-#            images: flashbots/go-template
-#            tags: |
-#              type=sha
-#              type=pep440,pattern={{version}}
-#              type=pep440,pattern={{major}}.{{minor}}
-#              type=raw,value=latest,enable=${{ !contains(env.RELEASE_VERSION, '-') }}
+  github-release:
+    runs-on: ubuntu-latest
+    needs: [build-binary, build-receiver-image]
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
 
-#       - name: Login to DockerHub
-#         uses: docker/login-action@v3
-#         with:
-#           username: ${{ secrets.DOCKERHUB_USERNAME }}
-#           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-#      - name: Go Build Cache for Docker
-#        uses: actions/cache@v3
-#        with:
-#          path: go-build-cache
-#          key: ${{ runner.os }}-go-build-cache-${{ hashFiles('**/go.sum') }}
-
-#      - name: inject go-build-cache into docker
-#        uses: reproducible-containers/buildkit-cache-dance@v2.1.2
-#        with:
-#          cache-source: go-build-cache
-
-#       - name: Build and push
-#         uses: docker/build-push-action@v5
-#         with:
-#           context: .
-#           build-args: |
-#             VERSION=${{ env.RELEASE_VERSION }}
-#           push: true
-#           tags: ${{ steps.meta.outputs.tags }}
-#           labels: ${{ steps.meta.outputs.labels }}
-#           platforms: linux/amd64,linux/arm64
-#           cache-from: type=gha
-#           cache-to: type=gha,mode=max
-
-#   github-release:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout sources
-#         uses: actions/checkout@v2
-
-#       - name: Create release
-#         id: create_release
-#         uses: actions/create-release@v1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-#         with:
-#           tag_name: ${{ github.ref }}
-#           release_name: ${{ github.ref }}
-#           draft: false
-#           prerelease: false
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
