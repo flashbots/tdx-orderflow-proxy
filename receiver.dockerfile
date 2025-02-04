@@ -5,7 +5,6 @@ RUN make build-receiver-proxy
 
 FROM gcr.io/distroless/cc-debian12:nonroot-6755e21ccd99ddead6edc8106ba03888cbeed41a
 WORKDIR /app
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/build/receiver-proxy /app/receiver-proxy
 ENV LISTEN_ADDR=":8080"
 EXPOSE 8080
