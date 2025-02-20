@@ -122,6 +122,14 @@ func (prx *SenderProxy) EthSendBundle(ctx context.Context, ethSendBundle rpctype
 		return err
 	}
 
+	// quick workaround for people setting timestamp to 0
+	if ethSendBundle.MaxTimestamp != nil && *ethSendBundle.MaxTimestamp == 0 {
+		ethSendBundle.MaxTimestamp = nil
+	}
+	if ethSendBundle.MinTimestamp != nil && *ethSendBundle.MinTimestamp == 0 {
+		ethSendBundle.MinTimestamp = nil
+	}
+
 	return prx.HandleParsedRequest(ctx, parsedRequest)
 }
 
