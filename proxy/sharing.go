@@ -158,11 +158,11 @@ func (sq *ShareQueue) proxyRequests(peer *shareQueuePeer, worker int) {
 		cancel()
 		timeShareQueuePeerRPCDuration(peer.name, time.Since(start).Milliseconds())
 		if err != nil {
-			logger.Warn("Error while proxying request", slog.Any("error", err))
+			logger.Debug("Error while proxying request", slog.Any("error", err))
 			incShareQueuePeerRPCErrors(peer.name)
 		}
 		if resp != nil && resp.Error != nil {
-			logger.Warn("Error returned from target while proxying", slog.Any("error", resp.Error))
+			logger.Debug("Error returned from target while proxying", slog.Any("error", resp.Error))
 			incShareQueuePeerRPCErrors(peer.name)
 		}
 		proxiedRequestCount += 1
