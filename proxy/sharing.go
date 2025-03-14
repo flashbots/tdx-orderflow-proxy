@@ -157,12 +157,17 @@ func (sq *ShareQueue) proxyRequests(peer *shareQueuePeer, worker int) {
 		resp, err := peer.client.Call(ctx, method, data)
 		cancel()
 		timeShareQueuePeerRPCDuration(peer.name, time.Since(start).Milliseconds())
+
+		logSendErrorLevel := slog.LevelDebug
+		if peer.name == "local-builder" {
+			logSendErrorLevel = slog.LevelWarn
+		}
 		if err != nil {
-			logger.Debug("Error while proxying request", slog.Any("error", err))
+			logger.Log(context.Background(), logSendErrorLevel, "Error while proxying request", slog.Any("error", err))
 			incShareQueuePeerRPCErrors(peer.name)
 		}
 		if resp != nil && resp.Error != nil {
-			logger.Debug("Error returned from target while proxying", slog.Any("error", resp.Error))
+			logger.Log(context.Background(), logSendErrorLevel, "Error returned from target while proxying", slog.Any("error", resp.Error))
 			incShareQueuePeerRPCErrors(peer.name)
 		}
 		proxiedRequestCount += 1
