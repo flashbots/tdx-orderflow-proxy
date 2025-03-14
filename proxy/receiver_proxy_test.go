@@ -269,6 +269,12 @@ func TestProxyBundleRequestWithPeerUpdate(t *testing.T) {
 			}
 		}
 	}()
+	apiNow = func() time.Time {
+		return time.Unix(1730000000, 0)
+	}
+	defer func() {
+		apiNow = time.Now
+	}()
 
 	signer, err := signature.NewSignerFromHexPrivateKey("0xd63b3c447fdea415a05e4c0b859474d14105a88178efdf350bc9f7b05be3cc58")
 	require.NoError(t, err)
@@ -320,12 +326,14 @@ func TestProxyBundleRequestWithPeerUpdate(t *testing.T) {
 	require.NoError(t, err)
 	proxiesUpdatePeers(t)
 
+	replacemenUUID := "550e8400-e29b-41d4-a716-446655440000"
 	_, err = client.Call(context.Background(), EthSendBundleMethod, &rpctypes.EthSendBundleArgs{
-		BlockNumber: 1002,
+		BlockNumber:     1002,
+		ReplacementUUID: &replacemenUUID,
 	})
 	require.NoError(t, err)
 
-	expectedRequest = `{"method":"eth_sendBundle","params":[{"txs":null,"blockNumber":"0x3ea","signingAddress":"0x9349365494be4f6205e5d44bdc7ec7dcd134becf"}],"id":0,"jsonrpc":"2.0"}`
+	expectedRequest = `{"method":"eth_sendBundle","params":[{"txs":null,"blockNumber":"0x3ea","replacementUuid":"550e8400-e29b-41d4-a716-446655440000","replacementNonce":1730000000000000,"signingAddress":"0x9349365494be4f6205e5d44bdc7ec7dcd134becf"}],"id":0,"jsonrpc":"2.0"}`
 	builderRequest = expectRequest(t, proxies[0].localBuilderRequests)
 	require.Equal(t, expectedRequest, builderRequest.body)
 	builderRequest = expectRequest(t, proxies[1].localBuilderRequests)
