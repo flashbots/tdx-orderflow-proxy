@@ -289,8 +289,9 @@ func TestProxyBundleRequestWithPeerUpdate(t *testing.T) {
 	require.NoError(t, err)
 	proxiesUpdatePeers(t)
 
+	blockNumber := hexutil.Uint64(1000)
 	resp, err := client.Call(context.Background(), EthSendBundleMethod, &rpctypes.EthSendBundleArgs{
-		BlockNumber: 1000,
+		BlockNumber: &blockNumber,
 	})
 	require.NoError(t, err)
 	require.Nil(t, resp.Error)
@@ -307,8 +308,9 @@ func TestProxyBundleRequestWithPeerUpdate(t *testing.T) {
 	require.NoError(t, err)
 	proxiesUpdatePeers(t)
 
+	blockNumber = hexutil.Uint64(1001)
 	_, err = client.Call(context.Background(), EthSendBundleMethod, &rpctypes.EthSendBundleArgs{
-		BlockNumber: 1001,
+		BlockNumber: &blockNumber,
 	})
 	require.NoError(t, err)
 
@@ -326,10 +328,11 @@ func TestProxyBundleRequestWithPeerUpdate(t *testing.T) {
 	require.NoError(t, err)
 	proxiesUpdatePeers(t)
 
-	replacemenUUID := "550e8400-e29b-41d4-a716-446655440000"
+	blockNumber = hexutil.Uint64(1002)
+	replacementUUID := "550e8400-e29b-41d4-a716-446655440000"
 	_, err = client.Call(context.Background(), EthSendBundleMethod, &rpctypes.EthSendBundleArgs{
-		BlockNumber:     1002,
-		ReplacementUUID: &replacemenUUID,
+		BlockNumber:     &blockNumber,
+		ReplacementUUID: &replacementUUID,
 	})
 	require.NoError(t, err)
 
@@ -361,15 +364,17 @@ func TestProxySendToArchive(t *testing.T) {
 		apiNow = time.Now
 	}()
 
+	blockNumber := hexutil.Uint64(123)
 	resp, err := client.Call(context.Background(), EthSendBundleMethod, &rpctypes.EthSendBundleArgs{
-		BlockNumber: 123,
+		BlockNumber: &blockNumber,
 	})
 	require.NoError(t, err)
 	require.Nil(t, resp.Error)
 	_ = expectRequest(t, proxies[0].localBuilderRequests)
 
+	blockNumber = hexutil.Uint64(456)
 	resp, err = client.Call(context.Background(), EthSendBundleMethod, &rpctypes.EthSendBundleArgs{
-		BlockNumber: 456,
+		BlockNumber: &blockNumber,
 	})
 	require.NoError(t, err)
 	require.Nil(t, resp.Error)

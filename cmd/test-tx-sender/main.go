@@ -10,7 +10,6 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/flashbots/go-utils/rpctypes"
 	"github.com/flashbots/go-utils/signature"
 	"github.com/flashbots/tdx-orderflow-proxy/proxy"
@@ -102,10 +101,11 @@ func main() {
 			replacementUUIDTyped := uuid.New()
 			repacementUUID := replacementUUIDTyped.String()
 			slog.Info("Using the following replacement UUID", "value", repacementUUID)
+			blockNumber := hexutil.Uint64(block)
 			bundleArgs := rpctypes.EthSendBundleArgs{
 				Txs:             []hexutil.Bytes{testTx},
 				ReplacementUUID: &repacementUUID,
-				BlockNumber:     rpc.BlockNumber(block), //nolint:gosec
+				BlockNumber:     &blockNumber,
 			}
 
 			bundleHash, bundleUUID, err := bundleArgs.Validate()
