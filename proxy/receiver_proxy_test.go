@@ -534,3 +534,17 @@ func TestProxyBidSubsidiseBlockCall(t *testing.T) {
 	expectNoRequest(t, proxies[1].localBuilderRequests)
 	expectNoRequest(t, proxies[2].localBuilderRequests)
 }
+
+func TestBuilderNetCertMethodCall(t *testing.T) {
+	client, err := RPCClientWithCertAndSigner(proxies[0].publicServerEndpoint, proxies[0].proxy.PublicCertPEM, flashbotsSigner, 1)
+	require.NoError(t, err)
+
+	resp, err := client.Call(context.Background(), "buildernet_cert")
+	require.NoError(t, err)
+	require.Nil(t, resp.Error)
+
+	var respBody string
+	err = client.CallFor(context.Background(), &resp, "buildernet_cert")
+	require.NoError(t, err)
+	require.Equal(t, "cert", respBody)
+}

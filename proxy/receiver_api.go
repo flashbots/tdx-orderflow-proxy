@@ -22,6 +22,7 @@ const (
 	EthCancelBundleMethod       = "eth_cancelBundle"
 	EthSendRawTransactionMethod = "eth_sendRawTransaction"
 	BidSubsidiseBlockMethod     = "bid_subsidiseBlock"
+	BuilderNetCertMethod        = "buildernet_cert"
 )
 
 var (
@@ -44,6 +45,7 @@ func (prx *ReceiverProxy) PublicJSONRPCHandler(maxRequestBodySizeBytes int64) (*
 		EthCancelBundleMethod:       prx.EthCancelBundlePublic,
 		EthSendRawTransactionMethod: prx.EthSendRawTransactionPublic,
 		BidSubsidiseBlockMethod:     prx.BidSubsidiseBlockPublic,
+		BuilderNetCertMethod:        prx.BuilderNetCertMethod,
 	},
 		rpcserver.JSONRPCHandlerOpts{
 			ServerName:                       "public_server",
@@ -63,6 +65,7 @@ func (prx *ReceiverProxy) LocalJSONRPCHandler(maxRequestBodySizeBytes int64) (*r
 		EthCancelBundleMethod:       prx.EthCancelBundleLocal,
 		EthSendRawTransactionMethod: prx.EthSendRawTransactionLocal,
 		BidSubsidiseBlockMethod:     prx.BidSubsidiseBlockLocal,
+		BuilderNetCertMethod:        prx.BuilderNetCertMethod,
 	},
 		rpcserver.JSONRPCHandlerOpts{
 			ServerName:                       "local_server",
@@ -105,6 +108,10 @@ func (prx *ReceiverProxy) ValidateSigner(ctx context.Context, req *ParsedRequest
 	}
 	req.peerName = peerName
 	return nil
+}
+
+func (prx *ReceiverProxy) BuilderNetCertMethod(ctx context.Context) (string, error) {
+	return string(prx.PublicCertPEM), nil
 }
 
 func (prx *ReceiverProxy) EthSendBundle(ctx context.Context, ethSendBundle rpctypes.EthSendBundleArgs, publicEndpoint bool) error {
