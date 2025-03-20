@@ -343,6 +343,22 @@ func TestProxyBundleRequestWithPeerUpdate(t *testing.T) {
 	require.Equal(t, expectedRequest, builderRequest.body)
 	builderRequest = expectRequest(t, proxies[2].localBuilderRequests)
 	require.Equal(t, expectedRequest, builderRequest.body)
+
+	replacementNonce := uint64(8976)
+	_, err = client.Call(context.Background(), EthSendBundleMethod, &rpctypes.EthSendBundleArgs{
+		BlockNumber:      &blockNumber,
+		ReplacementUUID:  &replacementUUID,
+		ReplacementNonce: &replacementNonce,
+	})
+	require.NoError(t, err)
+
+	expectedRequest = `{"method":"eth_sendBundle","params":[{"txs":null,"blockNumber":"0x3ea","replacementUuid":"550e8400-e29b-41d4-a716-446655440000","replacementNonce":8976,"signingAddress":"0x9349365494be4f6205e5d44bdc7ec7dcd134becf"}],"id":0,"jsonrpc":"2.0"}`
+	builderRequest = expectRequest(t, proxies[0].localBuilderRequests)
+	require.Equal(t, expectedRequest, builderRequest.body)
+	builderRequest = expectRequest(t, proxies[1].localBuilderRequests)
+	require.Equal(t, expectedRequest, builderRequest.body)
+	builderRequest = expectRequest(t, proxies[2].localBuilderRequests)
+	require.Equal(t, expectedRequest, builderRequest.body)
 }
 
 func TestProxySendToArchive(t *testing.T) {

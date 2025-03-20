@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	errSigningAddress   = errors.New("signing address field should not be set")
-	errReplacementNonce = errors.New("replacement nonce field should not be set")
+	errSigningAddress = errors.New("signing address field should not be set")
 
 	errDroppingTxHashed = errors.New("dropping tx hashes field should not be set")
 	errUUID             = errors.New("uuid field should not be set")
@@ -23,10 +22,6 @@ func ValidateEthSendBundle(args *rpctypes.EthSendBundleArgs, publicEndpoint bool
 	if !publicEndpoint {
 		if args.SigningAddress != nil {
 			return errSigningAddress
-		}
-
-		if args.ReplacementNonce != nil {
-			return errReplacementNonce
 		}
 	}
 	if len(args.DroppingTxHashes) > 0 {

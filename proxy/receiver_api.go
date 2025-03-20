@@ -136,7 +136,9 @@ func (prx *ReceiverProxy) EthSendBundle(ctx context.Context, ethSendBundle rpcty
 				timestamp = uint64(timestampInt)
 			}
 
-			ethSendBundle.ReplacementNonce = &timestamp
+			if ethSendBundle.ReplacementNonce == nil {
+				ethSendBundle.ReplacementNonce = &timestamp
+			}
 		}
 	}
 
