@@ -10,6 +10,7 @@ import (
 var (
 	HTTPDefaultReadTimeout  = 60 * time.Second
 	HTTPDefaultWriteTimeout = 30 * time.Second
+	HTTPDefaultIdleTimeout  = 1 * time.Hour
 )
 
 type ReceiverProxyServers struct {
@@ -26,6 +27,7 @@ func StartReceiverServers(proxy *ReceiverProxy, publicListenAddress, localListen
 		TLSConfig:    proxy.TLSConfig(),
 		ReadTimeout:  HTTPDefaultReadTimeout,
 		WriteTimeout: HTTPDefaultWriteTimeout,
+		IdleTimeout:  HTTPDefaultIdleTimeout,
 	}
 	localServer := &http.Server{
 		Addr:         localListenAddress,
@@ -33,12 +35,14 @@ func StartReceiverServers(proxy *ReceiverProxy, publicListenAddress, localListen
 		TLSConfig:    proxy.TLSConfig(),
 		ReadTimeout:  HTTPDefaultReadTimeout,
 		WriteTimeout: HTTPDefaultWriteTimeout,
+		IdleTimeout:  HTTPDefaultIdleTimeout,
 	}
 	certServer := &http.Server{
 		Addr:         certListenAddress,
 		Handler:      proxy.CertHandler,
 		ReadTimeout:  HTTPDefaultReadTimeout,
 		WriteTimeout: HTTPDefaultWriteTimeout,
+		IdleTimeout:  HTTPDefaultIdleTimeout,
 	}
 
 	errCh := make(chan error)
