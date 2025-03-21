@@ -29,15 +29,15 @@ type shareQueuePeer struct {
 	ch     chan *ParsedRequest
 	name   string
 	client rpcclient.RPCClient
-	cert   string
+	conf   ConfighubBuilder
 }
 
-func newShareQueuePeer(name string, client rpcclient.RPCClient, cert string) shareQueuePeer {
+func newShareQueuePeer(name string, client rpcclient.RPCClient, conf ConfighubBuilder) shareQueuePeer {
 	return shareQueuePeer{
 		ch:     make(chan *ParsedRequest, ShareWorkerQueueSize),
 		name:   name,
 		client: client,
-		cert:   cert,
+		conf:   conf,
 	}
 }
 
@@ -64,7 +64,7 @@ func (sq *ShareQueue) Run() {
 		peers        []shareQueuePeer
 	)
 	if sq.localBuilder != nil {
-		builderPeer := newShareQueuePeer("local-builder", sq.localBuilder, "")
+		builderPeer := newShareQueuePeer("local-builder", sq.localBuilder, ConfighubBuilder{})
 		localBuilder = &builderPeer
 		for worker := range workersPerPeer {
 			go sq.proxyRequests(localBuilder, worker)
@@ -99,8 +99,8 @@ func (sq *ShareQueue) Run() {
 		PeerLoop:
 			for _, peer := range peers {
 				for _, npi := range newPeers {
-					if peer.cert == npi.OrderflowProxy.TLSCert {
-						//peer found do not close
+					if peer.conf == npi {
+						// peer found do not close
 						peersToKeep = append(peersToKeep, peer)
 						continue PeerLoop
 					}
@@ -112,8 +112,7 @@ func (sq *ShareQueue) Run() {
 		NewPeerLoop:
 			for _, npi := range newPeers {
 				for _, peer := range peersToKeep {
-					if peer.cert == npi.OrderflowProxy.TLSCert {
-						peersToKeep = append(peersToKeep, peer)
+					if peer.conf == npi {
 						continue NewPeerLoop
 					}
 				}
@@ -137,7 +136,7 @@ func (sq *ShareQueue) Run() {
 					continue
 				}
 				sq.log.Info("Created client for peer", slog.String("peer", info.Name), slog.String("name", sq.name))
-				newPeer := newShareQueuePeer(info.Name, client, info.OrderflowProxy.TLSCert)
+				newPeer := newShareQueuePeer(info.Name, client, info)
 				peers = append(peers, newPeer)
 				for worker := range workersPerPeer {
 					go sq.proxyRequests(&newPeer, worker)
