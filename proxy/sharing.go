@@ -29,13 +29,15 @@ type shareQueuePeer struct {
 	ch     chan *ParsedRequest
 	name   string
 	client rpcclient.RPCClient
+	cert   string
 }
 
-func newShareQueuePeer(name string, client rpcclient.RPCClient) shareQueuePeer {
+func newShareQueuePeer(name string, client rpcclient.RPCClient, cert string) shareQueuePeer {
 	return shareQueuePeer{
 		ch:     make(chan *ParsedRequest, ShareWorkerQueueSize),
 		name:   name,
 		client: client,
+		cert:   cert,
 	}
 }
 
@@ -62,7 +64,7 @@ func (sq *ShareQueue) Run() {
 		peers        []shareQueuePeer
 	)
 	if sq.localBuilder != nil {
-		builderPeer := newShareQueuePeer("local-builder", sq.localBuilder)
+		builderPeer := newShareQueuePeer("local-builder", sq.localBuilder, "")
 		localBuilder = &builderPeer
 		for worker := range workersPerPeer {
 			go sq.proxyRequests(localBuilder, worker)
@@ -90,11 +92,40 @@ func (sq *ShareQueue) Run() {
 				sq.log.Info("Share queue closing, peer channel closed")
 				return
 			}
+
+			var peersToKeep []shareQueuePeer
+			var peersToClose []shareQueuePeer
+
+		PeerLoop:
 			for _, peer := range peers {
+				for _, npi := range newPeers {
+					if peer.cert == npi.OrderflowProxy.TLSCert {
+						//peer found do not close
+						peersToKeep = append(peersToKeep, peer)
+						continue PeerLoop
+					}
+				}
+				peersToClose = append(peersToClose, peer)
+			}
+
+			var newPeersToOpen []ConfighubBuilder
+		NewPeerLoop:
+			for _, npi := range newPeers {
+				for _, peer := range peersToKeep {
+					if peer.cert == npi.OrderflowProxy.TLSCert {
+						peersToKeep = append(peersToKeep, peer)
+						continue NewPeerLoop
+					}
+				}
+				newPeersToOpen = append(newPeersToOpen, npi)
+			}
+
+			for _, peer := range peersToClose {
 				peer.Close()
 			}
-			peers = nil
-			for _, info := range newPeers {
+
+			peers = peersToKeep
+			for _, info := range newPeersToOpen {
 				// don't send to yourself
 				if info.OrderflowProxy.EcdsaPubkeyAddress == sq.signer.Address() {
 					continue
@@ -106,7 +137,7 @@ func (sq *ShareQueue) Run() {
 					continue
 				}
 				sq.log.Info("Created client for peer", slog.String("peer", info.Name), slog.String("name", sq.name))
-				newPeer := newShareQueuePeer(info.Name, client)
+				newPeer := newShareQueuePeer(info.Name, client, info.OrderflowProxy.TLSCert)
 				peers = append(peers, newPeer)
 				for worker := range workersPerPeer {
 					go sq.proxyRequests(&newPeer, worker)
