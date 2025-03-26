@@ -50,7 +50,7 @@ jobs:
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-receiver
-            flashbots/tdx-orderflow-proxy-receiver
+            flashbots/orderflow-proxy-receiver
           tags: |
             type=sha
             type=semver,pattern={{version}}
@@ -106,7 +106,7 @@ jobs:
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-sender
-            flashbots/tdx-orderflow-proxy-sender
+            flashbots/orderflow-proxy-sender
           tags: |
             type=sha
             type=semver,pattern={{version}}
