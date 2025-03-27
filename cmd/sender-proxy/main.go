@@ -28,13 +28,13 @@ var flags []cli.Flag = []cli.Flag{
 	&cli.StringFlag{
 		Name:    "builder-confighub-endpoint",
 		Value:   "http://127.0.0.1:14892",
-		Usage:   "address of the builder config hub enpoint (directly or using the cvm-proxy)",
+		Usage:   "address of the builder config hub endpoint (directly or using the cvm-proxy)",
 		EnvVars: []string{"BUILDER_CONFIGHUB_ENDPOINT"},
 	},
 	&cli.StringFlag{
 		Name:    "orderflow-signer-key",
 		Value:   "0xfb5ad18432422a84514f71d63b45edf51165d33bef9c2bd60957a48d4c4cb68e",
-		Usage:   "ordreflow will be signed with this address",
+		Usage:   "orderflow will be signed with this address",
 		EnvVars: []string{"ORDERFLOW_SIGNER_KEY"},
 	},
 	&cli.Int64Flag{

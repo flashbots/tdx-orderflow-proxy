@@ -53,19 +53,19 @@ var flags []cli.Flag = []cli.Flag{
 	&cli.StringFlag{
 		Name:    "builder-confighub-endpoint",
 		Value:   "http://127.0.0.1:14892",
-		Usage:   "address of the builder config hub enpoint (directly or using the cvm-proxy)",
+		Usage:   "address of the builder config hub endpoint (directly or using the cvm-proxy)",
 		EnvVars: []string{"BUILDER_CONFIGHUB_ENDPOINT"},
 	},
 	&cli.StringFlag{
 		Name:    "orderflow-archive-endpoint",
 		Value:   "http://127.0.0.1:14893",
-		Usage:   "address of the ordreflow archive endpoint (block-processor)",
+		Usage:   "address of the orderflow archive endpoint (block-processor)",
 		EnvVars: []string{"ORDERFLOW_ARCHIVE_ENDPOINT"},
 	},
 	&cli.StringFlag{
 		Name:    "flashbots-orderflow-signer-address",
 		Value:   "0x5015Fa72E34f75A9eC64f44a4Fcf0837919D1bB7",
-		Usage:   "ordreflow from Flashbots will be signed with this address",
+		Usage:   "orderflow from Flashbots will be signed with this address",
 		EnvVars: []string{"FLASHBOTS_ORDERFLOW_SIGNER_ADDRESS"},
 	},
 	&cli.Int64Flag{

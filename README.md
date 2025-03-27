@@ -17,13 +17,13 @@ There are two separate programs in this repo:
 
 ## Run receiver proxy
 
-Receiver proxy will: 
+Receiver proxy will:
 
 * generate SSL certificate
 * generate orderflow signer
 * create 2 input servers serving TLS with that certificate (local-listen-addr, public-listen-addr)
 * create 1 local http server serving /cert  (cert-listen-addr)
-* create metrics server (metrict-addr)
+* create metrics server (metric-addr)
 * proxy requests to local builder
 * proxy local request to other builders in the network
 * archive local requests by sending them to archive endpoint
@@ -36,7 +36,7 @@ NAME:
    receiver-proxy - Serve API, and metrics
 
 USAGE:
-   receiver-proxy [global options] command [command options] 
+   receiver-proxy [global options] command [command options]
 
 COMMANDS:
    help, h  Shows a list of commands or help for one command
@@ -45,11 +45,11 @@ GLOBAL OPTIONS:
    --local-listen-addr value                   address to listen on for orderflow proxy API for external users and local operator (default: "127.0.0.1:443") [$LOCAL_LISTEN_ADDR]
    --public-listen-addr value                  address to listen on for orderflow proxy API for other network participants (default: "127.0.0.1:5544") [$PUBLIC_LISTEN_ADDR]
    --cert-listen-addr value                    address to listen on for orderflow proxy serving its SSL certificate on /cert (default: "127.0.0.1:14727") [$CERT_LISTEN_ADDR]
-   --builder-endpoint value                    address to send local ordeflow to (default: "http://127.0.0.1:8645") [$BUILDER_ENDPOINT]
+   --builder-endpoint value                    address to send local orderflow to (default: "http://127.0.0.1:8645") [$BUILDER_ENDPOINT]
    --rpc-endpoint value                        address of the node RPC that supports eth_blockNumber (default: "http://127.0.0.1:8545") [$RPC_ENDPOINT]
-   --builder-confighub-endpoint value          address of the builder config hub enpoint (directly or using the cvm-proxy) (default: "http://127.0.0.1:14892") [$BUILDER_CONFIGHUB_ENDPOINT]
-   --orderflow-archive-endpoint value          address of the ordreflow archive endpoint (block-processor) (default: "http://127.0.0.1:14893") [$ORDERFLOW_ARCHIVE_ENDPOINT]
-   --flashbots-orderflow-signer-address value  ordreflow from Flashbots will be signed with this address (default: "0x5015Fa72E34f75A9eC64f44a4Fcf0837919D1bB7") [$FLASHBOTS_ORDERFLOW_SIGNER_ADDRESS]
+   --builder-confighub-endpoint value          address of the builder config hub endpoint (directly or using the cvm-proxy) (default: "http://127.0.0.1:14892") [$BUILDER_CONFIGHUB_ENDPOINT]
+   --orderflow-archive-endpoint value          address of the orderflow archive endpoint (block-processor) (default: "http://127.0.0.1:14893") [$ORDERFLOW_ARCHIVE_ENDPOINT]
+   --flashbots-orderflow-signer-address value  orderflow from Flashbots will be signed with this address (default: "0x5015Fa72E34f75A9eC64f44a4Fcf0837919D1bB7") [$FLASHBOTS_ORDERFLOW_SIGNER_ADDRESS]
    --max-request-body-size-bytes value         Maximum size of the request body, if 0 default will be used (default: 0) [$MAX_REQUEST_BODY_SIZE_BYTES]
    --connections-per-peer value                Number of parallel connections for each peer and archival RPC (default: 10) [$CONN_PER_PEER]
    --max-local-requests-per-second value       Maximum number of unique local requests per second (default: 100) [$MAX_LOCAL_RPS]
@@ -67,10 +67,10 @@ GLOBAL OPTIONS:
 
 ## Run sender proxy
 
-Sender proxy will: 
+Sender proxy will:
 * listen for http requests
 * sign request with `orderflow-signer-key`
-* poxy them to the peers received form builder config hub
+* proxy them to the peers received form builder config hub
 
 ```
 ./build/sender-proxy -h
@@ -78,15 +78,15 @@ NAME:
    sender-proxy - Serve API, and metrics
 
 USAGE:
-   sender-proxy [global options] command [command options] 
+   sender-proxy [global options] command [command options]
 
 COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --listen-address value               address to listen on for requests (default: "127.0.0.1:8080") [$LISTEN_ADDRESS]
-   --builder-confighub-endpoint value   address of the builder config hub enpoint (directly or using the cvm-proxy) (default: "http://127.0.0.1:14892") [$BUILDER_CONFIGHUB_ENDPOINT]
-   --orderflow-signer-key value         ordreflow will be signed with this address (default: "0xfb5ad18432422a84514f71d63b45edf51165d33bef9c2bd60957a48d4c4cb68e") [$ORDERFLOW_SIGNER_KEY]
+   --builder-confighub-endpoint value   address of the builder config hub endpoint (directly or using the cvm-proxy) (default: "http://127.0.0.1:14892") [$BUILDER_CONFIGHUB_ENDPOINT]
+   --orderflow-signer-key value         orderflow will be signed with this address (default: "0xfb5ad18432422a84514f71d63b45edf51165d33bef9c2bd60957a48d4c4cb68e") [$ORDERFLOW_SIGNER_KEY]
    --max-request-body-size-bytes value  Maximum size of the request body, if 0 default will be used (default: 0) [$MAX_REQUEST_BODY_SIZE_BYTES]
    --connections-per-peer value         Number of parallel connections for each peer (default: 10) [$CONN_PER_PEER]
    --metrics-addr value                 address to listen on for Prometheus metrics (metrics are served on $metrics-addr/metrics) (default: "127.0.0.1:8090") [$METRICS_ADDR]

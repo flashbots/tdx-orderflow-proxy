@@ -21,7 +21,7 @@ var (
 	ArchiveBatchSizeFlushTimeout = time.Second * 6
 
 	errArchivePublicRequest = errors.New("public RPC request should not reach archive")
-	errArchiveReturnedError = errors.New("ordreflow archive returned error")
+	errArchiveReturnedError = errors.New("orderflow archive returned error")
 
 	ArchiveRequestTimeout = time.Second * 15
 	ArchiveRetryMaxTime   = time.Second * 120
